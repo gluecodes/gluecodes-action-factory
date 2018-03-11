@@ -1,0 +1,29 @@
+{
+  "name": "gluecodes-action-factory",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE.md",
+  "author": "Krzysztof Czopp",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "lint-src": "eslint index.js ./src/*.js --env node",
+    "lint-tests": "eslint ./tests/**/*.js --env mocha",
+    "lint": "npm run lint-src && npm run lint-tests",
+    "unit-test": "exit 0",
+    "functional-test": "export NODE_ENV=test; mocha tests/functional/*.js tests/functional/**/*.js",
+    "test": "npm run unit-test && npm run functional-test"
+  },
+  "dependencies": {
+    "ajv": "^6.1.1"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "eslint": "^4.16.0",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-jsx-a11y": "^6.0.3",
+    "eslint-plugin-react": "^7.6.0",
+    "mocha": "^5.0.1",
+    "sinon": "^4.4.1"
+  }
+}
