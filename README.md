@@ -13,7 +13,7 @@ Action Factory is a JavaScript library providing a clean way of developing apps 
 - **Isomorphic:** It works both on backend and frontend. (WIP)
 
 ## Overview
-- This module exports `combineSteps` function.
+- This module exports `createAction` function.
 - It expects five compartments: Steps (via `getSteps`), Conditions (via `getConditions`), Fold Step Results function (via `foldStepResults`), Front Controller (via `frontController`) and Data Flow Schema (via `dataFlowSchema`) which are glued together to return a single function.
 
 ```javascript
