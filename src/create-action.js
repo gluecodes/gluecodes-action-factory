@@ -233,7 +233,7 @@ const createAction = ({
   const dataReceivers = [];
   const schema = initSchema({ schema: dataFlowSchema, importCustomValidatorHandler });
   const validateStepResults = initValidator({ schema });
-  const stepResults = Object.assign(_initState({ schema, state: {} }), initialState);
+  const stepResults = {};
 
   const openDataReceiver = (registerDataReceiver) => {
     const dataReceiver = {};
@@ -301,7 +301,9 @@ const createAction = ({
     steps[stepName] = bindStepToStepResults({ step, storeStepResult });
   });
 
-  return async function resultedStep(props = {}) {
+  return async function resultedAction(props = {}) {
+    Object.assign(stepResults, _initState({ schema, state: {} }), initialState);
+
     _mergeStepResultRecursively({
       schema,
       state: stepResults,
