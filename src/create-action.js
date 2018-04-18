@@ -7,10 +7,20 @@ const _bindStepToStepResults = ({
     isItAsync
   },
   storeStepResult
-} = {}) => async function boundStep(props) {
-  const stepResult = isItAsync ? await code(props) : code(props);
+} = {}) => {
+  if (isItAsync) {
+    return async (props) => {
+      const stepResult = await code(props);
 
-  storeStepResult({ stepName: name, stepResult });
+      storeStepResult({ stepName: name, stepResult });
+    };
+  }
+
+  return (props) => {
+    const stepResult = code(props);
+
+    storeStepResult({ stepName: name, stepResult });
+  };
 };
 
 const _transformSchemaRecursively = ({
@@ -301,7 +311,7 @@ const createAction = ({
     steps[stepName] = bindStepToStepResults({ step, storeStepResult });
   });
 
-  return async function resultedAction(props = {}) {
+  return async (props = {}) => {
     Object.assign(stepResults, _initState({ schema, state: {} }), initialState);
 
     _mergeStepResultRecursively({
