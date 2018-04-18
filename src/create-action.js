@@ -51,7 +51,9 @@ const _transformStateRecursively = ({
   schema,
   state
 } = {}) => {
-  if (schema.type !== 'object' || !schema.properties) { return; }
+  if (schema.type !== 'object') { return; }
+
+  schema.properties = schema.properties || {};
 
   Object.keys(schema.properties).forEach((propName) => {
     const propSettings = schema.properties[propName];
