@@ -1,4 +1,5 @@
 const Ajv = require('ajv');
+const inputSchema = require('./create-action.json');
 
 const _bindStepToStepResults = ({
   step: { // can contain: name, code, isItAsync, settings
@@ -138,7 +139,7 @@ const _initValidator = ({ schema } = {}) => { // @todo prepare common error crea
   ajv.addKeyword('extendedType', {
     validate: (extendedType, value) => {
       if (value === null
-        || (value instanceof Object && value.constructor.name === extendedType)) { return true; }
+        || (value && value.constructor.name === extendedType)) { return true; }
 
       const error = {
         name: 'UnsatisfiedValidation',
@@ -269,47 +270,30 @@ const createAction = ({
   initValidator = _initValidator,
   onResultChanged
 } = {}) => {
-  const isDataFlowSchemaLiteralObject = dataFlowSchema instanceof Object
-    && dataFlowSchema.constructor.name === 'Object';
+  const validateInput = initValidator({
+    schema: initSchema({
+      schema: { setInput: inputSchema },
+      importCustomValidatorHandler
+    })
+  });
 
-  const isOptionalOnResultChangeFunction = typeof onResultChanged === 'undefined'
-    || typeof onResultChanged === 'function';
-
-  if (typeof bindStepToStepResults !== 'function') {
-    throw new Error("'bindStepToStepResults' arg must be a function");
-  }
-
-  if (!isDataFlowSchemaLiteralObject) {
-    throw new Error("Invalid Data Flow Schema, arg: 'dataFlowSchema' must be a literal object of JSON Schemas for each step name inc. core 'setInput' and 'getResult'");
-  }
-
-  if (typeof foldStepResults !== 'function') {
-    throw new Error("Invalid Fold Step Results, arg: 'foldStepResults' must be a function");
-  }
-
-  if (typeof frontController !== 'function') {
-    throw new Error("Invalid Front Controller, arg: 'frontController' must be a function");
-  }
-
-  if (typeof getConditions !== 'function') {
-    throw new Error("Invalid Conditions provider, arg: 'getConditions' must be a function returning a literal object of functions");
-  }
-
-  if (typeof getSteps !== 'function') {
-    throw new Error("Invalid Steps provider, arg: 'getSteps' must be a function returning a literal object of functions");
-  }
-
-  if (typeof importCustomValidatorHandler !== 'function') {
-    throw new Error("'importCustomValidatorHandler' arg must be a function");
-  }
-
-  if (typeof initSchema !== 'function') {
-    throw new Error("'initSchema' arg must be a function");
-  }
-
-  if (!isOptionalOnResultChangeFunction) {
-    throw new Error("Optional arg: 'onResultChanged' must be a function");
-  }
+  validateInput({
+    data: {
+      setInput: {
+        bindStepToStepResults,
+        dataFlowSchema,
+        foldStepResults,
+        frontController,
+        getConditions,
+        getSteps,
+        importCustomValidatorHandler,
+        initSchema,
+        initialState,
+        initValidator,
+        onResultChanged
+      }
+    }
+  });
 
   const dataReceivers = [];
   const schema = initSchema({ schema: dataFlowSchema, importCustomValidatorHandler });
@@ -372,6 +356,7 @@ const createAction = ({
   };
 
   const steps = getSteps({ stepResults, openDataReceiver });
+  const conditions = getConditions({ stepResults });
 
   if (typeof steps.setInput === 'function') {
     throw new Error("'setInput' step name is reserved for a step representing action input");
@@ -380,6 +365,14 @@ const createAction = ({
   if (typeof steps.getResult === 'function') {
     throw new Error("getInput' step name is reserved for a step representing action result");
   }
+
+  Object.keys(conditions).forEach((conditionName) => {
+    const condition = conditions[conditionName];
+
+    if (typeof condition !== 'function') {
+      throw new Error(`Invalid Conditions provider, arg: 'getConditions' must be a function returning a literal object of functions. Condition: '${conditionName} is not a function'`);
+    }
+  });
 
   Object.keys(steps).forEach((stepName) => {
     const isSchemaMissingForGivenStep = !dataFlowSchema[stepName];
@@ -391,6 +384,10 @@ const createAction = ({
     const step = typeof steps[stepName] === 'function'
       ? { name: stepName, code: steps[stepName] }
       : steps[stepName];
+
+    if (typeof step.code !== 'function') {
+      throw new Error(`Invalid Steps provider, arg: 'getSteps' must be a function returning a literal object of functions. Step: '${stepName} is not a function'`);
+    }
 
     step.isItAsync = step.code.constructor.name === 'AsyncFunction';
     steps[stepName] = bindStepToStepResults({ step, storeStepResult });
@@ -409,7 +406,7 @@ const createAction = ({
     validateStepResults({ data: stepResults });
 
     await frontController({
-      conditions: getConditions({ stepResults }),
+      conditions,
       steps
     });
 
