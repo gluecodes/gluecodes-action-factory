@@ -4,37 +4,36 @@ const compileCode = require('./../../helpers/compile-code');
 
 const test = it.bind(it);
 
-const SomeConstructor = function () {};
-class SomeClass {}
-
-const dataTypeExamples = [
-  {
-    name: 'Function',
-    acceptableValue: function () {} // eslint-disable-line object-shorthand
-  },
-  {
-    name: 'Function',
-    acceptableValue: () => {}
-  },
-  {
-    name: 'AsyncFunction',
-    acceptableValue: (async () => {})
-  },
-  {
-    name: 'RegExp',
-    acceptableValue: new RegExp('^.+$')
-  },
-  {
-    name: 'SomeConstructor',
-    acceptableValue: new SomeConstructor()
-  },
-  {
-    name: 'SomeClass',
-    acceptableValue: new SomeClass()
-  }
-];
-
 describe('extended types', () => {
+  const SomeConstructor = function () {};
+  class SomeClass {}
+  const dataTypeExamples = [
+    {
+      name: 'Function',
+      acceptableValue: function () {} // eslint-disable-line object-shorthand
+    },
+    {
+      name: 'Function',
+      acceptableValue: () => {}
+    },
+    {
+      name: 'AsyncFunction',
+      acceptableValue: (async () => {})
+    },
+    {
+      name: 'RegExp',
+      acceptableValue: new RegExp('^.+$')
+    },
+    {
+      name: 'SomeConstructor',
+      acceptableValue: new SomeConstructor()
+    },
+    {
+      name: 'SomeClass',
+      acceptableValue: new SomeClass()
+    }
+  ];
+
   dataTypeExamples.forEach(({ name, acceptableValue }) => {
     test(`passing value: '${name}' matches its extended type`, (done) => {
       const steps = `
