@@ -42,7 +42,6 @@ const _transformSchemaRecursively = ({
     }
 
     if (propSettings.validator) {
-      // eslint-disable-next-line global-require, import/no-dynamic-require
       propSettings.validator.handler = importCustomValidatorHandler(propSettings.validator.handler);
     }
 
