@@ -102,7 +102,7 @@ describe('custom validators', () => {
           crossProjectFunction: compileCode({
             sourceCode: crossProjectFunction,
             varsToBeInjected: { setTimeout }
-          }),
+          })
         }
       }),
       getConditions: compileCode({ sourceCode: conditions }),
@@ -223,7 +223,7 @@ describe('custom validators', () => {
           crossProjectFunction: compileCode({
             sourceCode: crossProjectFunction,
             varsToBeInjected: { setTimeout }
-          }),
+          })
         }
       }),
       getConditions: compileCode({ sourceCode: conditions }),
@@ -350,7 +350,7 @@ describe('custom validators', () => {
           crossProjectFunction: compileCode({
             sourceCode: crossProjectFunction,
             varsToBeInjected: { setTimeout }
-          }),
+          })
         }
       }),
       getConditions: compileCode({ sourceCode: conditions }),

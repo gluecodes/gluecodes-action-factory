@@ -4,86 +4,77 @@ const compileCode = require('./../../helpers/compile-code');
 
 const test = it.bind(it);
 
-const dataTypeExamples = [
-  {
-    type: 'array',
-    acceptableValues: {
-      'empty array': [],
-      'array of primitive values': [true, false, 1, -1, 0.01, -0.01, 'two'],
-      'array of arrays': [[], [[]]],
-      'array of objects': [{}, {}]
-    },
-    schema: {
-      type: 'array'
-    }
-  },
-  {
-    type: 'boolean',
-    acceptableValues: {
-      'true': true, // eslint-disable-line quote-props
-      'false': false // eslint-disable-line quote-props
-    },
-    schema: {
-      type: 'boolean'
-    }
-  },
-  {
-    type: 'integer',
-    acceptableValues: {
-      positive: 10,
-      negative: -10,
-      zero: 0
-    },
-    schema: {
-      type: 'integer'
-    }
-  },
-  {
-    type: 'number',
-    acceptableValues: {
-      'positive int': 10,
-      'negative int': -10,
-      zero: 0,
-      'positive float': 0.01,
-      'negative float': -0.01
-    },
-    schema: {
-      type: 'number'
-    }
-  },
-  /*{
-    type: 'null',
-    acceptableValues: {
-      'null': null // eslint-disable-line quote-props
-    },
-    schema: {
-      type: 'null'
-    }
-  },*/
-  {
-    type: 'object',
-    acceptableValues: {
-      'empty object': {},
-      'object of nested objects': { a: {}, b: { c: {} } }
-    },
-    schema: {
-      type: 'object',
-      properties: {}
-    }
-  },
-  {
-    type: 'string',
-    acceptableValues: {
-      string: 'some string'
-    },
-    schema: {
-      type: 'string'
-    }
-  }
-];
-
 describe('validation', () => {
-  dataTypeExamples.forEach((givenDataTypeItem, i) => {
+  const dataTypeExamples = [
+    {
+      type: 'array',
+      acceptableValues: {
+        'empty array': [],
+        'array of primitive values': [true, false, 1, -1, 0.01, -0.01, 'two'],
+        'array of arrays': [[], [[]]],
+        'array of objects': [{}, {}]
+      },
+      schema: {
+        type: 'array'
+      }
+    },
+    {
+      type: 'boolean',
+      acceptableValues: {
+        'true': true, // eslint-disable-line quote-props
+        'false': false // eslint-disable-line quote-props
+      },
+      schema: {
+        type: 'boolean'
+      }
+    },
+    {
+      type: 'integer',
+      acceptableValues: {
+        positive: 10,
+        negative: -10,
+        zero: 0
+      },
+      schema: {
+        type: 'integer'
+      }
+    },
+    {
+      type: 'number',
+      acceptableValues: {
+        'positive int': 10,
+        'negative int': -10,
+        zero: 0,
+        'positive float': 0.01,
+        'negative float': -0.01
+      },
+      schema: {
+        type: 'number'
+      }
+    },
+    {
+      type: 'object',
+      acceptableValues: {
+        'empty object': {},
+        'object of nested objects': { a: {}, b: { c: {} } }
+      },
+      schema: {
+        type: 'object',
+        properties: {}
+      }
+    },
+    {
+      type: 'string',
+      acceptableValues: {
+        string: 'some string'
+      },
+      schema: {
+        type: 'string'
+      }
+    }
+  ];
+
+  dataTypeExamples.forEach((givenDataTypeItem) => {
     const {
       type,
       acceptableValues,
