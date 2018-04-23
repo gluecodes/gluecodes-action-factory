@@ -215,6 +215,11 @@ const _mergeStepResultRecursively = ({
     const valueToBeSet = isItNestedObjectIteration ? value[propName] : value;
 
     if (propSettings.type !== 'object') {
+      if (typeof valueToBeSet === 'undefined') {
+        state[propName] = propSettings.default;
+        return;
+      }
+
       state[propName] = valueToBeSet !== null ? valueToBeSet : (propSettings.default || null);
 
       const isItValueResetAttempt = state[propName] === null;
