@@ -83,7 +83,7 @@ const dataTypeExamples = [
 ];
 
 describe('validation', () => {
-  dataTypeExamples.forEach((givenDataTypeItem, i) => {
+  dataTypeExamples.forEach((givenDataTypeItem) => {
     const {
       type,
       acceptableValues,

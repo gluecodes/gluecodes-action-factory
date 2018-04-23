@@ -30,16 +30,30 @@ const _transformSchemaRecursively = ({
   if (schema.type !== 'object' || !schema.properties) { return; }
 
   Object.keys(schema.properties).forEach((propName) => {
-    const propDefinition = schema.properties[propName];
+    const propSettings = schema.properties[propName];
+    const isPropOfExtendedType = /^x-/.test(propSettings.type);
 
-    if (propDefinition.validator) {
-      // eslint-disable-next-line global-require, import/no-dynamic-require
-      propDefinition.validator.handler = importCustomValidatorHandler(propDefinition.validator.handler);
+    if (propSettings.type === 'object' && typeof propSettings.default !== 'undefined') {
+      throw new Error("Property of type 'object' must not have 'default' value, instead specify its properties and set 'default' values on them");
     }
 
-    if (propDefinition.type !== 'object') { return; }
+    if (propSettings.validator) {
+      // eslint-disable-next-line global-require, import/no-dynamic-require
+      propSettings.validator.handler = importCustomValidatorHandler(propSettings.validator.handler);
+    }
 
-    _transformSchemaRecursively({ schema: propDefinition, importCustomValidatorHandler });
+    if (isPropOfExtendedType) {
+      const [, extendedType] = propSettings.type.split('x-');
+
+      propSettings.extendedType = extendedType;
+
+      delete propSettings.type;
+      return;
+    }
+
+    if (propSettings.type !== 'object') { return; }
+
+    _transformSchemaRecursively({ schema: propSettings, importCustomValidatorHandler });
   });
 };
 
@@ -120,6 +134,21 @@ const _initState = ({
 
 const _initValidator = ({ schema } = {}) => { // @todo prepare common error creators
   const ajv = new Ajv({ allErrors: true });
+
+  ajv.addKeyword('extendedType', {
+    validate: (extendedType, value) => {
+      if (value === null
+        || (value instanceof Object && value.constructor.name === extendedType)) { return true; }
+
+      const error = {
+        name: 'UnsatisfiedValidation',
+        message: `Value: '${value}' is not an instance of '${extendedType}'`,
+        intermediateErrors: []
+      };
+
+      throw error;
+    }
+  });
 
   ajv.addKeyword('validator', {
     validate: (definition, value) => {
@@ -232,14 +261,56 @@ const createAction = ({
   dataFlowSchema,
   foldStepResults,
   frontController,
-  getSteps,
   getConditions,
+  getSteps,
   importCustomValidatorHandler = require,
   initSchema = _initSchema,
   initialState = {},
   initValidator = _initValidator,
   onResultChanged
 } = {}) => {
+  const isDataFlowSchemaLiteralObject = dataFlowSchema instanceof Object
+    && dataFlowSchema.constructor.name === 'Object';
+
+  const isOptionalOnResultChangeFunction = typeof onResultChanged === 'undefined'
+    || typeof onResultChanged === 'function';
+
+  if (typeof bindStepToStepResults !== 'function') {
+    throw new Error("'bindStepToStepResults' arg must be a function");
+  }
+
+  if (!isDataFlowSchemaLiteralObject) {
+    throw new Error("Invalid Data Flow Schema, arg: 'dataFlowSchema' must be a literal object of JSON Schemas for each step name inc. core 'setInput' and 'getResult'");
+  }
+
+  if (typeof foldStepResults !== 'function') {
+    throw new Error("Invalid Fold Step Results, arg: 'foldStepResults' must be a function");
+  }
+
+  if (typeof frontController !== 'function') {
+    throw new Error("Invalid Front Controller, arg: 'frontController' must be a function");
+  }
+
+  if (typeof getConditions !== 'function') {
+    throw new Error("Invalid Conditions provider, arg: 'getConditions' must be a function returning a literal object of functions");
+  }
+
+  if (typeof getSteps !== 'function') {
+    throw new Error("Invalid Steps provider, arg: 'getSteps' must be a function returning a literal object of functions");
+  }
+
+  if (typeof importCustomValidatorHandler !== 'function') {
+    throw new Error("'importCustomValidatorHandler' arg must be a function");
+  }
+
+  if (typeof initSchema !== 'function') {
+    throw new Error("'initSchema' arg must be a function");
+  }
+
+  if (!isOptionalOnResultChangeFunction) {
+    throw new Error("Optional arg: 'onResultChanged' must be a function");
+  }
+
   const dataReceivers = [];
   const schema = initSchema({ schema: dataFlowSchema, importCustomValidatorHandler });
   const validateStepResults = initValidator({ schema });
@@ -302,7 +373,21 @@ const createAction = ({
 
   const steps = getSteps({ stepResults, openDataReceiver });
 
+  if (typeof steps.setInput === 'function') {
+    throw new Error("'setInput' step name is reserved for a step representing action input");
+  }
+
+  if (typeof steps.getResult === 'function') {
+    throw new Error("getInput' step name is reserved for a step representing action result");
+  }
+
   Object.keys(steps).forEach((stepName) => {
+    const isSchemaMissingForGivenStep = !dataFlowSchema[stepName];
+
+    if (isSchemaMissingForGivenStep) {
+      throw new Error(`Missing schema for step: '${stepName}'`);
+    }
+
     const step = typeof steps[stepName] === 'function'
       ? { name: stepName, code: steps[stepName] }
       : steps[stepName];

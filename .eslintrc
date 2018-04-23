@@ -13,7 +13,6 @@
     }],
     "no-param-reassign": "off",
     "no-plusplus": "off",
-    "no-underscore-dangle": "off",
-    "padded-blocks": "off"
+    "no-underscore-dangle": "off"
   }
 }
