@@ -116,7 +116,6 @@ describe('alive functions', () => {
         if (!haveAllDataBeenSubmitted()) { return; }
 
         clearInterval(interval);
-
       }, 100);
     };
 

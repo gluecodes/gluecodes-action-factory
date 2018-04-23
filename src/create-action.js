@@ -35,7 +35,10 @@ const _transformSchemaRecursively = ({
     const isPropOfExtendedType = /^x-/.test(propSettings.type);
 
     if (propSettings.type === 'object' && typeof propSettings.default !== 'undefined') {
-      throw new Error("Property of type 'object' must not have 'default' value, instead specify its properties and set 'default' values on them");
+      throw new Error([
+        "Property of type 'object' must not have 'default' value, ",
+        "instead specify its properties and set 'default' values on them"
+      ].join(''));
     }
 
     if (propSettings.validator) {
@@ -68,7 +71,6 @@ const _initSchema = ({
   };
 
   _transformSchemaRecursively({ schema: schemaToBeReturned, importCustomValidatorHandler });
-
   return schemaToBeReturned;
 };
 
@@ -166,7 +168,6 @@ const _initValidator = ({ schema } = {}) => { // @todo prepare common error crea
         const isValueValid = handler({ value, settings });
 
         if (isValueValid) { return true; }
-
       } catch (err) {
         intermediateErrors.push(err);
       }
@@ -370,7 +371,11 @@ const createAction = ({
     const condition = conditions[conditionName];
 
     if (typeof condition !== 'function') {
-      throw new Error(`Invalid Conditions provider, arg: 'getConditions' must be a function returning a literal object of functions. Condition: '${conditionName} is not a function'`);
+      throw new Error([
+        'Invalid Conditions provider, ',
+        "arg: 'getConditions' must be a function returning a literal object of functions. ",
+        `Condition: '${conditionName} is not a function'`
+      ].split(''));
     }
   });
 
@@ -386,7 +391,11 @@ const createAction = ({
       : steps[stepName];
 
     if (typeof step.code !== 'function') {
-      throw new Error(`Invalid Steps provider, arg: 'getSteps' must be a function returning a literal object of functions. Step: '${stepName} is not a function'`);
+      throw new Error([
+        'Invalid Steps provider, ',
+        "arg: 'getSteps' must be a function returning a literal object of functions. ",
+        `Step: '${stepName} is not a function'`
+      ].split(''));
     }
 
     step.isItAsync = step.code.constructor.name === 'AsyncFunction';
