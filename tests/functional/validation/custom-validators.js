@@ -40,7 +40,13 @@ describe('custom validators', () => {
           someProp: {
             type: 'string',
             validator: {
-              handler: './some-dummy-path',
+              handler: ({
+                value,
+                settings
+              } = {}) => {
+                validatorSpy(value, settings);
+                return true;
+              },
               settings: {
                 message: failedValidationMessage
               }
@@ -82,15 +88,6 @@ describe('custom validators', () => {
         return result;
       }
     `;
-    const importCustomValidatorHandler = `
-      () => ({
-        value,
-        settings
-      } = {}) => {
-        validatorSpy(value, settings);
-        return true;
-      };
-    `;
 
     const resultedAction = createAction({
       dataFlowSchema,
@@ -105,15 +102,7 @@ describe('custom validators', () => {
           })
         }
       }),
-      getConditions: compileCode({ sourceCode: conditions }),
-      importCustomValidatorHandler: compileCode({
-        sourceCode: importCustomValidatorHandler,
-        varsToBeInjected: {
-          Promise,
-          setTimeout,
-          validatorSpy
-        }
-      })
+      getConditions: compileCode({ sourceCode: conditions })
     });
 
     const someInputProp = 'whateverInput';
@@ -161,7 +150,13 @@ describe('custom validators', () => {
           someProp: {
             type: 'string',
             validator: {
-              handler: './some-dummy-path',
+              handler: ({
+                value,
+                settings
+              } = {}) => {
+                validatorSpy(value, settings);
+                return false;
+              },
               settings: {
                 message: failedValidationMessage
               }
@@ -203,15 +198,6 @@ describe('custom validators', () => {
         return result;
       }
     `;
-    const importCustomValidatorHandler = `
-      () => ({
-        value,
-        settings
-      } = {}) => {
-        validatorSpy(value, settings);
-        return false;
-      };
-    `;
 
     const resultedAction = createAction({
       dataFlowSchema,
@@ -226,15 +212,7 @@ describe('custom validators', () => {
           })
         }
       }),
-      getConditions: compileCode({ sourceCode: conditions }),
-      importCustomValidatorHandler: compileCode({
-        sourceCode: importCustomValidatorHandler,
-        varsToBeInjected: {
-          Promise,
-          setTimeout,
-          validatorSpy
-        }
-      })
+      getConditions: compileCode({ sourceCode: conditions })
     });
 
     const someInputProp = 'whateverInput';
@@ -290,7 +268,13 @@ describe('custom validators', () => {
           someProp: {
             type: 'string',
             validator: {
-              handler: './some-dummy-path',
+              handler: ({
+                value,
+                settings
+              } = {}) => {
+                validatorSpy(value, settings);
+                throw new Error(intermediateErrorMessage);
+              },
               settings: {
                 message: failedValidationMessage
               }
@@ -332,15 +316,6 @@ describe('custom validators', () => {
         return result;
       }
     `;
-    const importCustomValidatorHandler = `
-      () => ({
-        value,
-        settings
-      } = {}) => {
-        validatorSpy(value, settings);
-        throw new Error('${intermediateErrorMessage}');
-      };
-    `;
 
     const resultedAction = createAction({
       dataFlowSchema,
@@ -355,15 +330,7 @@ describe('custom validators', () => {
           })
         }
       }),
-      getConditions: compileCode({ sourceCode: conditions }),
-      importCustomValidatorHandler: compileCode({
-        sourceCode: importCustomValidatorHandler,
-        varsToBeInjected: {
-          Promise,
-          setTimeout,
-          validatorSpy
-        }
-      })
+      getConditions: compileCode({ sourceCode: conditions })
     });
 
     const someInputProp = 'whateverInput';

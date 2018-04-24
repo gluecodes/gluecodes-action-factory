@@ -37,11 +37,6 @@ describe('configuration', () => {
       isRequired: true,
       wrongTypeExample: -0.01
     },
-    importCustomValidatorHandler: {
-      type: 'x-Function',
-      isRequired: false,
-      wrongTypeExample: {}
-    },
     initSchema: {
       type: 'x-Function',
       isRequired: false,

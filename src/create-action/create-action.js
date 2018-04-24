@@ -33,8 +33,7 @@ const _bindStepToStepResults = ({
 };
 
 const _transformSchemaRecursively = ({
-  schema,
-  importCustomValidatorHandler = require
+  schema
 } = {}) => {
   if (schema.type !== 'object' || !schema.properties) { return; }
 
@@ -63,10 +62,6 @@ const _transformSchemaRecursively = ({
       });
     }
 
-    if (propSettings.validator) {
-      propSettings.validator.handler = importCustomValidatorHandler(propSettings.validator.handler);
-    }
-
     if (isPropOfExtendedType) {
       const [, extendedType] = propSettings.type.split('x-');
 
@@ -78,20 +73,19 @@ const _transformSchemaRecursively = ({
 
     if (propSettings.type !== 'object') { return; }
 
-    _transformSchemaRecursively({ schema: propSettings, importCustomValidatorHandler });
+    _transformSchemaRecursively({ schema: propSettings });
   });
 };
 
 const _initSchema = ({
-  schema,
-  importCustomValidatorHandler = require
+  schema
 } = {}) => {
   const schemaToBeReturned = {
     type: 'object',
     properties: schema
   };
 
-  _transformSchemaRecursively({ schema: schemaToBeReturned, importCustomValidatorHandler });
+  _transformSchemaRecursively({ schema: schemaToBeReturned });
   return schemaToBeReturned;
 };
 
@@ -306,7 +300,6 @@ const createAction = ({
   frontController,
   getConditions,
   getSteps,
-  importCustomValidatorHandler = require,
   initSchema = _initSchema,
   initialState = {},
   initValidator = _initValidator,
@@ -314,8 +307,7 @@ const createAction = ({
 } = {}) => {
   const validateInput = _initValidator({
     schema: _initSchema({
-      schema: { setInput: inputSchema },
-      importCustomValidatorHandler
+      schema: { setInput: inputSchema }
     })
   });
 
@@ -328,7 +320,6 @@ const createAction = ({
         frontController,
         getConditions,
         getSteps,
-        importCustomValidatorHandler,
         initSchema,
         initialState,
         initValidator,
@@ -338,7 +329,7 @@ const createAction = ({
   });
 
   const dataReceivers = [];
-  const schema = initSchema({ schema: dataFlowSchema, importCustomValidatorHandler });
+  const schema = initSchema({ schema: dataFlowSchema });
   const validateStepResults = initValidator({ schema });
   const stepResults = {};
 

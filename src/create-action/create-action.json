@@ -19,9 +19,6 @@
     "getSteps": {
       "type": "x-Function"
     },
-    "importCustomValidatorHandler": {
-      "type": "x-Function"
-    },
     "initSchema": {
       "type": "x-Function"
     },
@@ -42,7 +39,6 @@
     "frontController",
     "getConditions",
     "getSteps",
-    "importCustomValidatorHandler",
     "initSchema",
     "initialState",
     "initValidator"
