@@ -1,6 +1,7 @@
 const { expect } = require('chai');
 const { createAction } = require('./../../index');
 const compileCode = require('./../helpers/compile-code');
+const errorCodes = require('./../../src/create-action/error-codes.json');
 
 const test = it.bind(it);
 
@@ -238,5 +239,343 @@ describe('configuration', () => {
         done();
       }
     });
+  });
+
+  test(`throwing ${errorCodes.ILLEGAL_GET_RESULT_STEP_NAME}`, (done) => {
+    const steps = `
+      () => ({
+        async step1() {},
+        async step2() {},
+        getResult() { }
+      });
+    `;
+    const conditions = `
+      () => ({
+        condition1() {},
+        condition2() {},
+        condition3() {}
+      });
+    `;
+    const dataFlowSchema = {
+      setInput: {},
+      step1: {},
+      step2: {},
+      getResult: {}
+    };
+    const foldStepResults = `
+      () => {};
+    `;
+    const frontController = `
+      async ({} = {}) => {}
+    `;
+
+    try {
+      createAction({
+        dataFlowSchema,
+        foldStepResults: compileCode({ sourceCode: foldStepResults }),
+        frontController: compileCode({ sourceCode: frontController }),
+        getSteps: compileCode({ sourceCode: steps }),
+        getConditions: compileCode({ sourceCode: conditions })
+      });
+
+      done(new Error(`Uncaught error: ${errorCodes.ILLEGAL_GET_RESULT_STEP_NAME}`));
+    } catch (expectedError) {
+      expect(expectedError.name).to.equal('Core.InvalidConfig');
+      expect(expectedError.code).to.equal(errorCodes.ILLEGAL_GET_RESULT_STEP_NAME);
+      done();
+    }
+  });
+
+  test(`throwing ${errorCodes.ILLEGAL_SET_INPUT_STEP_NAME}`, (done) => {
+    const steps = `
+      () => ({
+        async step1() {},
+        async step2() {},
+        setInput() { }
+      });
+    `;
+    const conditions = `
+      () => ({
+        condition1() {},
+        condition2() {},
+        condition3() {}
+      });
+    `;
+    const dataFlowSchema = {
+      setInput: {},
+      step1: {},
+      step2: {},
+      getResult: {}
+    };
+    const foldStepResults = `
+      () => {};
+    `;
+    const frontController = `
+      async ({} = {}) => {}
+    `;
+
+    try {
+      createAction({
+        dataFlowSchema,
+        foldStepResults: compileCode({ sourceCode: foldStepResults }),
+        frontController: compileCode({ sourceCode: frontController }),
+        getSteps: compileCode({ sourceCode: steps }),
+        getConditions: compileCode({ sourceCode: conditions })
+      });
+
+      done(new Error(`Uncaught error: ${errorCodes.ILLEGAL_SET_INPUT_STEP_NAME}`));
+    } catch (expectedError) {
+      expect(expectedError.name).to.equal('Core.InvalidConfig');
+      expect(expectedError.code).to.equal(errorCodes.ILLEGAL_SET_INPUT_STEP_NAME);
+      done();
+    }
+  });
+
+  test(`throwing ${errorCodes.INVALID_CONDITIONS_PROVIDER}`, (done) => {
+    const steps = `
+      () => ({
+        async step1() {},
+        async step2() {},
+        step3() { }
+      });
+    `;
+    const conditions = `
+      () => ({
+        condition1() {},
+        condition2() {},
+        condition3: 'some non-function'
+      });
+    `;
+    const dataFlowSchema = {
+      setInput: {},
+      step1: {},
+      step2: {},
+      step3: {},
+      getResult: {}
+    };
+    const foldStepResults = `
+      () => {};
+    `;
+    const frontController = `
+      async ({} = {}) => {}
+    `;
+
+    try {
+      createAction({
+        dataFlowSchema,
+        foldStepResults: compileCode({ sourceCode: foldStepResults }),
+        frontController: compileCode({ sourceCode: frontController }),
+        getSteps: compileCode({ sourceCode: steps }),
+        getConditions: compileCode({ sourceCode: conditions })
+      });
+
+      done(new Error(`Uncaught error: ${errorCodes.INVALID_CONDITIONS_PROVIDER}`));
+    } catch (expectedError) {
+      expect(expectedError.name).to.equal('Core.InvalidConfig');
+      expect(expectedError.code).to.equal(errorCodes.INVALID_CONDITIONS_PROVIDER);
+      done();
+    }
+  });
+
+  test(`throwing ${errorCodes.INVALID_STEPS_PROVIDER}`, (done) => {
+    const steps = `
+      () => ({
+        step1: 'some non-function',
+        async step2() {},
+        step3() { }
+      });
+    `;
+    const conditions = `
+      () => ({
+        condition1() {},
+        condition2() {},
+        condition3() {}
+      });
+    `;
+    const dataFlowSchema = {
+      setInput: {},
+      step1: {},
+      step2: {},
+      step3: {},
+      getResult: {}
+    };
+    const foldStepResults = `
+      () => {};
+    `;
+    const frontController = `
+      async ({} = {}) => {}
+    `;
+
+    try {
+      createAction({
+        dataFlowSchema,
+        foldStepResults: compileCode({ sourceCode: foldStepResults }),
+        frontController: compileCode({ sourceCode: frontController }),
+        getSteps: compileCode({ sourceCode: steps }),
+        getConditions: compileCode({ sourceCode: conditions })
+      });
+
+      done(new Error(`Uncaught error: ${errorCodes.INVALID_STEPS_PROVIDER}`));
+    } catch (expectedError) {
+      expect(expectedError.name).to.equal('Core.InvalidConfig');
+      expect(expectedError.code).to.equal(errorCodes.INVALID_STEPS_PROVIDER);
+      done();
+    }
+  });
+
+  test(`throwing ${errorCodes.MISSING_SCHEMA_FOR_GIVEN_STEP}`, (done) => {
+    const steps = `
+      () => ({
+        async step1() {},
+        async step2() {},
+        step3() { }
+      });
+    `;
+    const conditions = `
+      () => ({
+        condition1() {},
+        condition2() {},
+        condition3() {}
+      });
+    `;
+    const dataFlowSchema = { // no schema for step1
+      setInput: {},
+      step2: {},
+      step3: {},
+      getResult: {}
+    };
+    const foldStepResults = `
+      () => {};
+    `;
+    const frontController = `
+      async ({} = {}) => {}
+    `;
+
+    try {
+      createAction({
+        dataFlowSchema,
+        foldStepResults: compileCode({ sourceCode: foldStepResults }),
+        frontController: compileCode({ sourceCode: frontController }),
+        getSteps: compileCode({ sourceCode: steps }),
+        getConditions: compileCode({ sourceCode: conditions })
+      });
+
+      done(new Error(`Uncaught error: ${errorCodes.MISSING_SCHEMA_FOR_GIVEN_STEP}`));
+    } catch (expectedError) {
+      expect(expectedError.name).to.equal('Core.InvalidConfig');
+      expect(expectedError.code).to.equal(errorCodes.MISSING_SCHEMA_FOR_GIVEN_STEP);
+      done();
+    }
+  });
+
+  test(`throwing ${errorCodes.NO_DEFAULT_OBJECTS}`, (done) => {
+    const steps = `
+      () => ({
+        async step1() {},
+        async step2() {},
+        step3() { }
+      });
+    `;
+    const conditions = `
+      () => ({
+        condition1() {},
+        condition2() {},
+        condition3() {}
+      });
+    `;
+    const dataFlowSchema = {
+      setInput: {
+        type: 'object',
+        properties: {
+          someProp: {
+            type: 'object',
+            default: {
+              someNestedProp: 'someNestedProp'
+            }
+          }
+        }
+      },
+      step1: {},
+      step2: {},
+      step3: {},
+      getResult: {}
+    };
+    const foldStepResults = `
+      () => {};
+    `;
+    const frontController = `
+      async ({} = {}) => {}
+    `;
+
+    try {
+      createAction({
+        dataFlowSchema,
+        foldStepResults: compileCode({ sourceCode: foldStepResults }),
+        frontController: compileCode({ sourceCode: frontController }),
+        getSteps: compileCode({ sourceCode: steps }),
+        getConditions: compileCode({ sourceCode: conditions })
+      });
+
+      done(new Error(`Uncaught error: ${errorCodes.NO_DEFAULT_OBJECTS}`));
+    } catch (expectedError) {
+      expect(expectedError.name).to.equal('Core.InvalidConfig');
+      expect(expectedError.code).to.equal(errorCodes.NO_DEFAULT_OBJECTS);
+      done();
+    }
+  });
+
+  test(`throwing ${errorCodes.NO_DEFAULT_VALUE_ON_REQUIRED_PROP}`, (done) => {
+    const steps = `
+      () => ({
+        async step1() {},
+        async step2() {},
+        step3() { }
+      });
+    `;
+    const conditions = `
+      () => ({
+        condition1() {},
+        condition2() {},
+        condition3() {}
+      });
+    `;
+    const dataFlowSchema = {
+      setInput: {
+        type: 'object',
+        properties: {
+          someProp: {
+            type: 'string',
+            default: 'some string'
+          }
+        },
+        required: ['someProp']
+      },
+      step1: {},
+      step2: {},
+      step3: {},
+      getResult: {}
+    };
+    const foldStepResults = `
+      () => {};
+    `;
+    const frontController = `
+      async ({} = {}) => {}
+    `;
+
+    try {
+      createAction({
+        dataFlowSchema,
+        foldStepResults: compileCode({ sourceCode: foldStepResults }),
+        frontController: compileCode({ sourceCode: frontController }),
+        getSteps: compileCode({ sourceCode: steps }),
+        getConditions: compileCode({ sourceCode: conditions })
+      });
+
+      done(new Error(`Uncaught error: ${errorCodes.NO_DEFAULT_VALUE_ON_REQUIRED_PROP}`));
+    } catch (expectedError) {
+      expect(expectedError.name).to.equal('Core.InvalidConfig');
+      expect(expectedError.code).to.equal(errorCodes.NO_DEFAULT_VALUE_ON_REQUIRED_PROP);
+      done();
+    }
   });
 });

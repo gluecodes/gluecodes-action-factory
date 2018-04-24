@@ -58,7 +58,7 @@ const _transformSchemaRecursively = ({
 
     if (isPropRequiredWithDefaultValue) {
       throw new InvalidConfig({
-        code: errorCodes.NO_DEFAULT_VALUE_ON_REQUIRED_PROPS,
+        code: errorCodes.NO_DEFAULT_VALUE_ON_REQUIRED_PROP,
         message: `Property: '${propName}' cannot be required and have default value at the same time`
       });
     }
@@ -419,7 +419,7 @@ const createAction = ({
           'Invalid Conditions provider, ',
           "arg: 'getConditions' must be a function returning a literal object of functions. ",
           `Condition: '${conditionName} is not a function'`
-        ].split('')
+        ].join('')
       });
     }
   });
@@ -445,7 +445,7 @@ const createAction = ({
           'Invalid Steps provider, ',
           "arg: 'getSteps' must be a function returning a literal object of functions. ",
           `Step: '${stepName} is not a function'`
-        ].split('')
+        ].join('')
       });
     }
 
