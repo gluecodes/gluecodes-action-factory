@@ -156,22 +156,30 @@ const _initState = ({
   return stateToBeReturned;
 };
 
-const _initValidator = ({ schema } = {}) => { // @todo prepare common error creators
+const _initValidator = ({ schema } = {}) => {
   const ajv = new Ajv({ allErrors: true });
 
   ajv.addKeyword('extendedType', {
-    validate: (extendedType, value) => {
+    errors: true,
+    compile: extendedType => function validate(value) {
       if (value === null
         || (value && value.constructor.name === extendedType)) { return true; }
 
-      throw new UnsatisfiedValidation({
-        message: `Value: '${value}' is not an instance of '${extendedType}'`
-      });
+      const error = new Error();
+
+      error.keyword = 'type';
+      error.message = `should be ${extendedType}`;
+      error.params = {
+        type: `x-${extendedType}`
+      };
+
+      validate.errors = [error];
+      return false;
     }
   });
 
   ajv.addKeyword('validator', {
-    validate: (definition, value) => {
+    compile: (definition) => {
       const {
         handler,
         settings,
@@ -179,20 +187,32 @@ const _initValidator = ({ schema } = {}) => { // @todo prepare common error crea
           message
         }
       } = definition;
-      const intermediateErrors = [];
 
-      try {
-        const isValueValid = handler({ value, settings });
+      return function validate(value) {
+        let unexpectedValidatorError;
+        let error;
 
-        if (isValueValid) { return true; }
-      } catch (err) {
-        intermediateErrors.push(err);
-      }
+        try {
+          const isValueValid = handler({ value, settings });
 
-      throw new UnsatisfiedValidation({
-        message,
-        intermediateErrors
-      });
+          return isValueValid;
+        } catch (err) {
+          unexpectedValidatorError = err;
+        }
+
+        if (unexpectedValidatorError) {
+          error = unexpectedValidatorError;
+          error.keyword = 'custom-validator';
+        } else {
+          error = new Error();
+          error.keyword = 'custom-validator';
+          error.message = message;
+        }
+
+        error.params = {};
+        validate.errors = [error];
+        return false;
+      };
     }
   });
 
@@ -287,8 +307,8 @@ const createAction = ({
   initValidator = _initValidator,
   onResultChanged
 } = {}) => {
-  const validateInput = initValidator({
-    schema: initSchema({
+  const validateInput = _initValidator({
+    schema: _initSchema({
       schema: { setInput: inputSchema },
       importCustomValidatorHandler
     })
