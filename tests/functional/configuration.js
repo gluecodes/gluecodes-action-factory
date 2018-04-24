@@ -5,22 +5,63 @@ const compileCode = require('./../helpers/compile-code');
 const test = it.bind(it);
 
 describe('configuration', () => {
-  const requiredArgs = [
-    'dataFlowSchema',
-    'foldStepResults',
-    'frontController',
-    'getSteps',
-    'getConditions'
-  ];
-
-  const optionalArgs = [
-    'bindStepToStepResults',
-    'importCustomValidatorHandler',
-    'initSchema',
-    'initialState',
-    'initValidator',
-    'onResultChanged'
-  ];
+  const inputArgs = {
+    bindStepToStepResults: {
+      type: 'x-Function',
+      isRequired: false,
+      wrongTypeExample: []
+    },
+    dataFlowSchema: {
+      type: 'object',
+      isRequired: true,
+      wrongTypeExample: true
+    },
+    foldStepResults: {
+      type: 'x-Function',
+      isRequired: true,
+      wrongTypeExample: 10
+    },
+    frontController: {
+      type: 'x-AsyncFunction',
+      isRequired: true,
+      wrongTypeExample: -10
+    },
+    getConditions: {
+      type: 'x-Function',
+      isRequired: true,
+      wrongTypeExample: 0.01
+    },
+    getSteps: {
+      type: 'x-Function',
+      isRequired: true,
+      wrongTypeExample: -0.01
+    },
+    importCustomValidatorHandler: {
+      type: 'x-Function',
+      isRequired: false,
+      wrongTypeExample: {}
+    },
+    initSchema: {
+      type: 'x-Function',
+      isRequired: false,
+      wrongTypeExample: 'some string'
+    },
+    initialState: {
+      type: 'object',
+      isRequired: false,
+      wrongTypeExample: null
+    },
+    initValidator: {
+      type: 'x-Function',
+      isRequired: false,
+      wrongTypeExample: new Date()
+    },
+    onResultChanged: {
+      type: 'x-Function',
+      isRequired: false,
+      wrongTypeExample: new RegExp('^.+$')
+    }
+  };
 
   test('passing all correct required arguments', () => {
     const steps = `
@@ -66,7 +107,11 @@ describe('configuration', () => {
     expect(true).to.equal(true);
   });
 
-  requiredArgs.forEach((argName) => {
+  Object.keys(inputArgs).forEach((argName) => {
+    const argSettings = inputArgs[argName];
+
+    if (!argSettings.isRequired) { return; }
+
     test(`missing required argument: '${argName}'`, (done) => {
       const steps = `
         () => ({
@@ -115,7 +160,9 @@ describe('configuration', () => {
     });
   });
 
-  requiredArgs.concat(optionalArgs).forEach((argName) => {
+  Object.keys(inputArgs).forEach((argName) => {
+    const argSettings = inputArgs[argName];
+
     test(`invalid type of argument: '${argName}'`, (done) => {
       const steps = `
         () => ({
@@ -145,29 +192,48 @@ describe('configuration', () => {
         async ({} = {}) => {}
       `;
 
-      const notAFunction = 'notAFunction';
-      const notALiteralObject = 123;
-
       try {
         createAction({
-          bindStepToStepResults: argName === 'bindStepToStepResults' ? notAFunction : undefined,
-          dataFlowSchema: argName === 'dataFlowSchema' ? notALiteralObject : dataFlowSchema,
-          foldStepResults: argName === 'foldStepResults' ? notAFunction : compileCode({ sourceCode: foldStepResults }),
-          frontController: argName === 'frontController' ? notAFunction : compileCode({ sourceCode: frontController }),
-          importCustomValidatorHandler: argName === 'importCustomValidatorHandler' ? notAFunction : require,
-          initialState: argName === 'initialState' ? notALiteralObject : undefined,
-          initSchema: argName === 'initSchema' ? notAFunction : undefined,
-          initValidator: argName === 'initValidator' ? notAFunction : undefined,
-          getSteps: argName === 'getSteps' ? notAFunction : compileCode({ sourceCode: steps }),
-          getConditions: argName === 'getConditions' ? notAFunction : compileCode({ sourceCode: conditions }),
-          onResultChanged: argName === 'onResultChanged' ? notAFunction : () => {}
+          bindStepToStepResults: argName === 'bindStepToStepResults'
+            ? argSettings.wrongTypeExample
+            : undefined,
+          dataFlowSchema: argName === 'dataFlowSchema'
+            ? argSettings.wrongTypeExample
+            : dataFlowSchema,
+          foldStepResults: argName === 'foldStepResults'
+            ? argSettings.wrongTypeExample
+            : compileCode({ sourceCode: foldStepResults }),
+          frontController: argName === 'frontController'
+            ? argSettings.wrongTypeExample
+            : compileCode({ sourceCode: frontController }),
+          importCustomValidatorHandler: argName === 'importCustomValidatorHandler'
+            ? argSettings.wrongTypeExample
+            : require,
+          initialState: argName === 'initialState'
+            ? argSettings.wrongTypeExample
+            : undefined,
+          initSchema: argName === 'initSchema'
+            ? argSettings.wrongTypeExample
+            : undefined,
+          initValidator: argName === 'initValidator'
+            ? argSettings.wrongTypeExample
+            : undefined,
+          getSteps: argName === 'getSteps'
+            ? argSettings.wrongTypeExample
+            : compileCode({ sourceCode: steps }),
+          getConditions: argName === 'getConditions'
+            ? argSettings.wrongTypeExample
+            : compileCode({ sourceCode: conditions }),
+          onResultChanged: argName === 'onResultChanged'
+            ? argSettings.wrongTypeExample
+            : () => {}
         });
 
         done(new Error(`Uncaught wrong type of arg: ${argName}`));
       } catch (expectedError) {
         expect(expectedError.name).to.equal('Core.UnsatisfiedValidation');
         expect(expectedError).to.nested.include({ 'intermediateErrors[0].keyword': 'type' });
-        //expect(expectedError).to.nested.include({ 'intermediateErrors[0].params.type': 'x-Function' });
+        expect(expectedError).to.nested.include({ 'intermediateErrors[0].params.type': argSettings.type });
         expect(expectedError).to.nested.include({ 'intermediateErrors[0].dataPath': `.setInput.${argName}` });
         done();
       }

@@ -13,7 +13,7 @@
     "lint-tests": "eslint ./tests/**/*.js --env mocha",
     "lint": "npm run lint-src && npm run lint-tests",
     "unit-test": "exit 0",
-    "functional-test": "export NODE_ENV=test; mocha tests/functional/*.js tests/functional/**/*.js",
+    "functional-test": "export NODE_ENV=test; mocha tests/functional/configuration.js",
     "test": "npm run unit-test && npm run functional-test"
   },
   "dependencies": {
