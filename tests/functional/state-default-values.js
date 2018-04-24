@@ -4,15 +4,15 @@ const compileCode = require('./../helpers/compile-code');
 
 const test = it.bind(it);
 
-const defaultValuesPerDataType = {
-  array: [true, false, 1, -1, 0.01, -0.01, 'two'],
-  boolean: true,
-  integer: 1,
-  number: 0.01,
-  string: 'some string'
-};
-
 describe('state default values', () => {
+  const defaultValuesPerDataType = {
+    array: [true, false, 1, -1, 0.01, -0.01, 'two'],
+    boolean: true,
+    integer: 1,
+    number: 0.01,
+    string: 'some string'
+  };
+
   Object.keys(defaultValuesPerDataType).forEach((dataType) => {
     const defaultValue = defaultValuesPerDataType[dataType];
 
@@ -117,7 +117,7 @@ describe('state default values', () => {
         getConditions: compileCode({ sourceCode: conditions })
       });
 
-      resultedAction({ someProp: null })
+      resultedAction({ someProp: undefined })
         .then((result) => {
           if (dataType === 'array') {
             const {
@@ -214,7 +214,7 @@ describe('state default values', () => {
         getConditions: compileCode({ sourceCode: conditions })
       });
 
-      resultedAction({ someProp: null })
+      resultedAction({ someProp: undefined })
         .then((result) => {
           if (dataType === 'array') {
             expect(JSON.stringify(result.someNestedProp)).to.equal('[true,false,1,-1,0.01,-0.01,"two"]');

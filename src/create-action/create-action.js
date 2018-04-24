@@ -1,5 +1,13 @@
 const Ajv = require('ajv');
+const errorCodes = require('./error-codes.json');
 const inputSchema = require('./create-action.json');
+
+const {
+  core: {
+    InvalidConfig,
+    UnsatisfiedValidation
+  }
+} = require('./../errors/index');
 
 const _bindStepToStepResults = ({
   step: { // can contain: name, code, isItAsync, settings
@@ -33,12 +41,26 @@ const _transformSchemaRecursively = ({
   Object.keys(schema.properties).forEach((propName) => {
     const propSettings = schema.properties[propName];
     const isPropOfExtendedType = /^x-/.test(propSettings.type);
+    const hasPropDefaultObjectValue = propSettings.type === 'object' && typeof propSettings.default !== 'undefined';
+    const isPropRequiredWithDefaultValue = Array.isArray(schema.required)
+      && schema.required.indexOf(propName) !== -1
+      && typeof propSettings.default !== 'undefined';
 
-    if (propSettings.type === 'object' && typeof propSettings.default !== 'undefined') {
-      throw new Error([
-        "Property of type 'object' must not have 'default' value, ",
-        "instead specify its properties and set 'default' values on them"
-      ].join(''));
+    if (hasPropDefaultObjectValue) {
+      throw new InvalidConfig({
+        code: errorCodes.NO_DEFAULT_OBJECTS,
+        message: [
+          "Property of type 'object' must not have 'default' value, ",
+          "instead specify its properties and set 'default' values on them"
+        ].join('')
+      });
+    }
+
+    if (isPropRequiredWithDefaultValue) {
+      throw new InvalidConfig({
+        code: errorCodes.NO_DEFAULT_VALUE_ON_REQUIRED_PROPS,
+        message: `Property: '${propName}' cannot be required and have default value at the same time`
+      });
     }
 
     if (propSettings.validator) {
@@ -142,13 +164,9 @@ const _initValidator = ({ schema } = {}) => { // @todo prepare common error crea
       if (value === null
         || (value && value.constructor.name === extendedType)) { return true; }
 
-      const error = {
-        name: 'UnsatisfiedValidation',
-        message: `Value: '${value}' is not an instance of '${extendedType}'`,
-        intermediateErrors: []
-      };
-
-      throw error;
+      throw new UnsatisfiedValidation({
+        message: `Value: '${value}' is not an instance of '${extendedType}'`
+      });
     }
   });
 
@@ -171,13 +189,10 @@ const _initValidator = ({ schema } = {}) => { // @todo prepare common error crea
         intermediateErrors.push(err);
       }
 
-      const error = {
-        name: 'UnsatisfiedValidation',
+      throw new UnsatisfiedValidation({
         message,
         intermediateErrors
-      };
-
-      throw error;
+      });
     }
   });
 
@@ -186,13 +201,10 @@ const _initValidator = ({ schema } = {}) => { // @todo prepare common error crea
   return ({ data } = {}) => {
     if (validator(data)) { return; }
 
-    const error = {
-      name: 'UnsatisfiedValidation',
+    throw new UnsatisfiedValidation({
       message: 'Validation error',
       intermediateErrors: validator.errors
-    };
-
-    throw error;
+    });
   };
 };
 
@@ -215,6 +227,11 @@ const _mergeStepResultRecursively = ({
     const valueToBeSet = isItNestedObjectIteration ? value[propName] : value;
 
     if (propSettings.type !== 'object') {
+      if (typeof valueToBeSet === 'undefined') {
+        state[propName] = propSettings.default;
+        return;
+      }
+
       state[propName] = valueToBeSet !== null ? valueToBeSet : (propSettings.default || null);
 
       const isItValueResetAttempt = state[propName] === null;
@@ -359,22 +376,31 @@ const createAction = ({
   const conditions = getConditions({ stepResults });
 
   if (typeof steps.setInput === 'function') {
-    throw new Error("'setInput' step name is reserved for a step representing action input");
+    throw new InvalidConfig({
+      code: errorCodes.ILLEGAL_SET_INPUT_STEP_NAME,
+      message: "'setInput' step name is reserved for a step representing action input"
+    });
   }
 
   if (typeof steps.getResult === 'function') {
-    throw new Error("getInput' step name is reserved for a step representing action result");
+    throw new InvalidConfig({
+      code: errorCodes.ILLEGAL_GET_RESULT_STEP_NAME,
+      message: "getInput' step name is reserved for a step representing action result"
+    });
   }
 
   Object.keys(conditions).forEach((conditionName) => {
     const condition = conditions[conditionName];
 
     if (typeof condition !== 'function') {
-      throw new Error([
-        'Invalid Conditions provider, ',
-        "arg: 'getConditions' must be a function returning a literal object of functions. ",
-        `Condition: '${conditionName} is not a function'`
-      ].split(''));
+      throw new InvalidConfig({
+        code: errorCodes.INVALID_CONDITIONS_PROVIDER,
+        message: [
+          'Invalid Conditions provider, ',
+          "arg: 'getConditions' must be a function returning a literal object of functions. ",
+          `Condition: '${conditionName} is not a function'`
+        ].split('')
+      });
     }
   });
 
@@ -382,7 +408,10 @@ const createAction = ({
     const isSchemaMissingForGivenStep = !dataFlowSchema[stepName];
 
     if (isSchemaMissingForGivenStep) {
-      throw new Error(`Missing schema for step: '${stepName}'`);
+      throw new InvalidConfig({
+        code: errorCodes.MISSING_SCHEMA_FOR_GIVEN_STEP,
+        message: `Missing schema for step: '${stepName}'`
+      });
     }
 
     const step = typeof steps[stepName] === 'function'
@@ -390,11 +419,14 @@ const createAction = ({
       : steps[stepName];
 
     if (typeof step.code !== 'function') {
-      throw new Error([
-        'Invalid Steps provider, ',
-        "arg: 'getSteps' must be a function returning a literal object of functions. ",
-        `Step: '${stepName} is not a function'`
-      ].split(''));
+      throw new InvalidConfig({
+        code: errorCodes.INVALID_STEPS_PROVIDER,
+        message: [
+          'Invalid Steps provider, ',
+          "arg: 'getSteps' must be a function returning a literal object of functions. ",
+          `Step: '${stepName} is not a function'`
+        ].split('')
+      });
     }
 
     step.isItAsync = step.code.constructor.name === 'AsyncFunction';

@@ -226,7 +226,7 @@ describe('extended types', () => {
           .then(() => done(new Error('validator returning false')))
           .catch((expectedError) => {
             try {
-              expect(expectedError.name).to.equal('UnsatisfiedValidation');
+              expect(expectedError.name).to.equal('Core.UnsatisfiedValidation');
               done();
 
             } catch (err) {

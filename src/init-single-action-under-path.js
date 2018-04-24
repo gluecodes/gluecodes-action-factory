@@ -1,4 +1,4 @@
-const { createAction } = require('./create-action');
+const { createAction } = require('./create-action/create-action');
 const { readdirSync } = require('fs');
 const { basename } = require('path');
 
