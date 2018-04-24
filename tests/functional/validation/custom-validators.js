@@ -244,7 +244,7 @@ describe('custom validators', () => {
       .catch((expectedError) => {
         try {
           expect(validatorSpy.calledWith(someInputProp, { message: failedValidationMessage })).to.equal(true);
-          expect(expectedError.name).to.equal('UnsatisfiedValidation');
+          expect(expectedError.name).to.equal('Core.UnsatisfiedValidation');
           done();
 
         } catch (err) {
@@ -371,7 +371,7 @@ describe('custom validators', () => {
       .catch((expectedError) => {
         try {
           expect(validatorSpy.calledWith(someInputProp, { message: failedValidationMessage })).to.equal(true);
-          expect(expectedError.name).to.equal('UnsatisfiedValidation');
+          expect(expectedError.name).to.equal('Core.UnsatisfiedValidation');
           expect(expectedError).to.nested.include({ 'intermediateErrors[0].message': intermediateErrorMessage });
           done();
 

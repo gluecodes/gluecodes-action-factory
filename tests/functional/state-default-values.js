@@ -40,8 +40,7 @@ describe('state default values', () => {
           type: 'object',
           properties: {
             someProp: { type: dataType, default: defaultValue }
-          },
-          required: ['someProp']
+          }
         },
         step1: {
           type: 'object',

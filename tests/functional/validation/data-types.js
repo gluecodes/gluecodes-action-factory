@@ -293,7 +293,7 @@ describe('validation', () => {
             .then(() => done(new Error(`'${givenDataType}' asserted against '${dataTypeToAssertAgainst}' (${valueDescription})`)))
             .catch((expectedError) => {
               try {
-                expect(expectedError.name).to.equal('UnsatisfiedValidation');
+                expect(expectedError.name).to.equal('Core.UnsatisfiedValidation');
                 done();
 
               } catch (err) {

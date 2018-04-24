@@ -94,7 +94,7 @@ describe('required keyword', () => {
       .then(() => done(new Error('missing required input')))
       .catch((expectedError) => {
         try {
-          expect(expectedError.name).to.equal('UnsatisfiedValidation');
+          expect(expectedError.name).to.equal('Core.UnsatisfiedValidation');
           done();
 
         } catch (err) {
