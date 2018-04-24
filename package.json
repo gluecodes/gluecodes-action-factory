@@ -10,10 +10,10 @@
   "scripts": {
     "build": "./node_modules/.bin/webpack --config ./webpack.config.js",
     "lint-src": "eslint index.js ./src/*.js --env node",
-    "lint-tests": "eslint ./tests/**/*.js --env mocha",
+    "lint-tests": "eslint ./tests/functional/**/*.js --env mocha",
     "lint": "npm run lint-src && npm run lint-tests",
     "unit-test": "exit 0",
-    "functional-test": "export NODE_ENV=test; mocha tests/functional/configuration.js",
+    "functional-test": "export NODE_ENV=test; mocha tests/functional/*.js tests/functional/**/*.js",
     "test": "npm run unit-test && npm run functional-test"
   },
   "dependencies": {

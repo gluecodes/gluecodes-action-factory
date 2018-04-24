@@ -245,8 +245,10 @@ describe('custom validators', () => {
         try {
           expect(validatorSpy.calledWith(someInputProp, { message: failedValidationMessage })).to.equal(true);
           expect(expectedError.name).to.equal('Core.UnsatisfiedValidation');
+          expect(expectedError).to.nested.include({ 'intermediateErrors[0].keyword': 'validator' });
+          expect(expectedError).to.nested.include({ 'intermediateErrors[0].dataPath': '.setInput.someProp' });
+          expect(expectedError).to.nested.include({ 'intermediateErrors[0].message': failedValidationMessage });
           done();
-
         } catch (err) {
           done(err);
         }
@@ -372,9 +374,11 @@ describe('custom validators', () => {
         try {
           expect(validatorSpy.calledWith(someInputProp, { message: failedValidationMessage })).to.equal(true);
           expect(expectedError.name).to.equal('Core.UnsatisfiedValidation');
-          expect(expectedError).to.nested.include({ 'intermediateErrors[0].message': intermediateErrorMessage });
+          expect(expectedError).to.nested.include({ 'intermediateErrors[0].keyword': 'validator' });
+          expect(expectedError).to.nested.include({ 'intermediateErrors[0].dataPath': '.setInput.someProp' });
+          expect(expectedError).to.nested.include({ 'intermediateErrors[0].message': failedValidationMessage });
+          expect(expectedError).to.nested.include({ 'intermediateErrors[1].message': intermediateErrorMessage });
           done();
-
         } catch (err) {
           done(err);
         }

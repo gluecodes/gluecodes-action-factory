@@ -195,22 +195,27 @@ const _initValidator = ({ schema } = {}) => {
         try {
           const isValueValid = handler({ value, settings });
 
-          return isValueValid;
+          if (!isValueValid) {
+            error = new Error();
+            error.keyword = 'validator';
+            error.params = {};
+            error.message = message;
+            validate.errors = [error];
+
+            return false;
+          }
+
+          return true;
         } catch (err) {
           unexpectedValidatorError = err;
         }
 
-        if (unexpectedValidatorError) {
-          error = unexpectedValidatorError;
-          error.keyword = 'custom-validator';
-        } else {
-          error = new Error();
-          error.keyword = 'custom-validator';
-          error.message = message;
-        }
-
+        error = new Error();
+        error.keyword = 'validator';
         error.params = {};
-        validate.errors = [error];
+        error.message = message;
+        validate.errors = [error, unexpectedValidatorError];
+
         return false;
       };
     }

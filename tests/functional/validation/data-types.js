@@ -266,7 +266,9 @@ describe('validation', () => {
           `;
           const crossProjectFunction = `
             async function({ someProp } = {}) { 
-              const someAsyncFunction = () => new Promise((resolve, reject) => setTimeout(() => resolve(someProp), 100));
+              const someAsyncFunction = () => new Promise((resolve, reject) => { 
+                setTimeout(() => resolve(someProp), 100); 
+              });
               const result = await someAsyncFunction();
               
               return result;
@@ -290,12 +292,12 @@ describe('validation', () => {
           });
 
           resultedAction({ someProp: valueToBeAssertedAgainst })
-            .then(() => done(new Error(`'${givenDataType}' asserted against '${dataTypeToAssertAgainst}' (${valueDescription})`)))
+            .then(() =>
+              done(new Error(`'${givenDataType}' asserted against '${dataTypeToAssertAgainst}' (${valueDescription})`)))
             .catch((expectedError) => {
               try {
                 expect(expectedError.name).to.equal('Core.UnsatisfiedValidation');
                 done();
-
               } catch (err) {
                 done(err);
               }

@@ -96,7 +96,6 @@ describe('required keyword', () => {
         try {
           expect(expectedError.name).to.equal('Core.UnsatisfiedValidation');
           done();
-
         } catch (err) {
           done(err);
         }

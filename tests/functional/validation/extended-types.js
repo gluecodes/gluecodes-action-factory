@@ -5,12 +5,12 @@ const compileCode = require('./../../helpers/compile-code');
 const test = it.bind(it);
 
 describe('extended types', () => {
-  const SomeConstructor = function () {};
+  const SomeConstructor = function () {}; // eslint-disable-line func-names
   class SomeClass {}
   const dataTypeExamples = [
     {
       name: 'Function',
-      acceptableValue: function () {} // eslint-disable-line object-shorthand
+      acceptableValue: function () {} // eslint-disable-line object-shorthand, func-names
     },
     {
       name: 'Function',
@@ -228,7 +228,6 @@ describe('extended types', () => {
             try {
               expect(expectedError.name).to.equal('Core.UnsatisfiedValidation');
               done();
-
             } catch (err) {
               done(err);
             }
