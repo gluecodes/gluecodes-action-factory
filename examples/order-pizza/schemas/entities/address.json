@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "properties": {
+    "hasItBeenVerified": { "type": "boolean", "default": false },
+    "line1": { "type": "string" },
+    "line2": { "type": "string" },
+    "line3": { "type": "string" },
+    "postcode": { "type": "string" },
+    "town": { "type": "string" }
+  },
+  "required": [
+    "line1",
+    "postcode",
+    "town"
+  ]
+}
